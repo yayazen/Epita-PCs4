@@ -1,9 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <err.h>
+#include <unistd.h>
 #include <pthread.h>
+#include <errno.h>
+#include <err.h>
+
+extern int errno;
 
 void* fn_thread(void* arg);
+
 
 int main(int argc, char** argv)
 {
@@ -12,45 +17,43 @@ int main(int argc, char** argv)
         errx(EXIT_FAILURE, "The number of threads is missing.");
     else if (argc > 2)
         errx(EXIT_FAILURE, "Specify only the number of threads.");
+
     
-    int rc;
-    pthread_t *thrd;
-    long nb_thrd, t;
-    
-    // - Convert the argument into a long integer.
-    //   Use atol(3).
-    //   This value represents the number of threads.
-    // - If the argument is not valid (i.e. lower than or equal to zero),
-    //   exit with an error message.
-    if ((nb_thrd = atol(argv[1])) <= 0)
+    long nb_threads;
+    if ((nb_threads = atol(argv[1])) <= 0)
         errx(EXIT_FAILURE, "The number of threads is not valid.");
-
-    // - Create and execute the threads.
-    thrd = malloc(nb_thrd * sizeof(pthread_t));
-
-    for (t = 0; t < nb_thrd; t++) {
-        //   If an error occurs, exit with an error message.
-        //   You can use err(3), but the 'errno' variable is not set automatically.
-        //   You have to set it manually to the return value of pthread_create(). 
-        if ((rc = pthread_create(thrd + t, NULL, fn_thread, NULL)))
-            errx(rc, "in pthread_create, has returned %d\n", rc);
-    }
-
-    // - Wait for the threads to end.
-    for (t = 0; t < nb_thrd; t++) {
-        pthread_join(thrd[t], NULL);
-    }
     
-    // - Return from the function.
-    free(thrd);
-    return 0;
+
+    pthread_t threads[nb_threads];
+    long tid;
+
+    for (tid = 0; tid < nb_threads; tid++) {
+        
+        errno = pthread_create(threads + tid, NULL, fn_thread, (void *)tid);
+
+        if (errno) {
+            close(STDOUT_FILENO);
+            err(EXIT_FAILURE, "pthread_create");
+        }
+    }
+
+
+    for (tid = 0; tid < nb_threads; tid++) {
+
+        pthread_join(threads[tid], NULL);
+    }
+
+
+    return EXIT_SUCCESS;
 }
 
 // Define the thread function.
-void* fn_thread(void* arg __attribute__((unused)))
+void* fn_thread(void *arg)
 {
-    // - Print a message.
-    printf("Hello from thread!\n");
-    // - Return from the function.
+    sleep(rand() % 3);
+
+    long tid = (long)arg;
+    printf("Hello from thread %ld!\n", tid);
+
     pthread_exit(NULL);
 }

@@ -18,7 +18,8 @@ int main(int argc, char** argv)
     else if (argc > 2)
         errx(EXIT_FAILURE, "Specify only the number of threads.");
 
-    
+    char *str;
+
     long nb_threads;
     if ((nb_threads = atol(argv[1])) <= 0)
         errx(EXIT_FAILURE, "The number of threads is not valid.");
@@ -27,10 +28,13 @@ int main(int argc, char** argv)
     pthread_t threads[nb_threads];
     long tid;
 
-
     for (tid = 0; tid < nb_threads; tid++) {
-        
-        errno = pthread_create(threads + tid, NULL, fn_thread, NULL);
+
+        str = (tid % 2 == 0)
+            ? "Hello from an even thread."
+            : "Hello from an odd thread.";
+
+        errno = pthread_create(threads + tid, NULL, fn_thread, str);
 
         if (errno) {
             close(STDOUT_FILENO);
@@ -49,9 +53,12 @@ int main(int argc, char** argv)
 }
 
 // Define the thread function.
-void* fn_thread(void* arg __attribute__((unused)))
+void* fn_thread(void *arg)
 {
-    printf("Hello from thread!\n");
+    sleep(rand() % 3);
+
+    char *str = (char *)arg;
+    printf("%s\n", str);
 
     pthread_exit(NULL);
 }

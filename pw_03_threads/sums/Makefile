@@ -2,17 +2,16 @@
 
 CC = gcc
 CPPFLAGS =
-CFLAGS = -Wall -Wextra 
+CFLAGS = -Wall -Wextra -O3
 LDFLAGS = -pthread
 LDLIBS =
 
-EXE = hello hello_id hello_parity
+EXE = split dnc
 
 all: ${EXE}
 
-hello:
-hello_id:
-hello_parity:
+split:
+dnc:
 
 .PHONY: clean
 
