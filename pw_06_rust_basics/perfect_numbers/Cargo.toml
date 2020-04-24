@@ -1,0 +1,8 @@
+[package]
+name = "perfect_numbers"
+version = "0.1.0"
+authors = ["Yanis Mammar<yanis.mammar@epita.fr>"]
+edition = "2018"
+
+[dependencies]
+divisor_sum = { path = "../divisor_sum" }
