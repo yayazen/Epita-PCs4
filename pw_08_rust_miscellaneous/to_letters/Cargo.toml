@@ -1,0 +1,8 @@
+[package]
+name = "to_letters"
+version = "0.1.0"
+authors = ["Yanis Mammar <yanis.mammar@epita.fr>"]
+edition = "2018"
+
+[dependencies]
+structopt = "0.2"
